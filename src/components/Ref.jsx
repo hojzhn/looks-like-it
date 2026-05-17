@@ -206,7 +206,7 @@ export function RefProvider({ children }) {
         <div
           aria-hidden={!active}
           ref={noteRef}
-          className="absolute left-0 right-0 py-[0.6em]  pointer-events-none"
+          className="absolute left-0 right-0 pt-2 pb-4 mt-2 border-t border-black pointer-events-none"
           style={{
             top: active ? `${active.top}px` : "0px",
             opacity: phase === "widening" ? 1 : 0,
@@ -214,7 +214,7 @@ export function RefProvider({ children }) {
             fontSize: active ? `${active.fontSize}px` : undefined,
           }}
         >
-          <div className="text-[0.85em] -top-[0.2em] font-sans font-light tracking-normal text-neutral-500 relative">
+          <div className="text-[0.5em] font-sans font-light tracking-normal text-neutral-500 relative">
             {active && (
               <>
                 <span className="mr-[0.4em] text-[0.4em] -top-[1em] relative font-sans font-medium tabular-nums opacity-70">
