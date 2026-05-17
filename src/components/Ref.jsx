@@ -206,15 +206,17 @@ export function RefProvider({ children }) {
         <div
           aria-hidden={!active}
           ref={noteRef}
-          className="absolute left-0 right-0 pt-2 pb-4 mt-2 border-t border-black pointer-events-none"
+          className="absolute left-0 right-0 pt-2 pb-4 mt-2 border-t-2 pointer-events-none"
           style={{
             top: active ? `${active.top}px` : "0px",
             opacity: phase === "widening" ? 1 : 0,
-            transition: `opacity 400ms ${EASE} ${phase === "widening" ? "180ms" : "0ms"}, top ${noteTopTransition}`,
+            borderTopColor:
+              phase === "widening" ? "rgba(0,0,0,1)" : "rgba(0,0,0,0)",
+            transition: `opacity 400ms ${EASE} ${phase === "widening" ? "180ms" : "0ms"}, top ${noteTopTransition}, border-top-color 500ms ${EASE} ${phase === "widening" ? "300ms" : "0ms"}`,
             fontSize: active ? `${active.fontSize}px` : undefined,
           }}
         >
-          <div className="text-[0.5em] font-sans font-light tracking-normal text-neutral-500 relative">
+          <div className="text-[0.5em] font-medium tracking-normal relative">
             {active && (
               <>
                 <span className="mr-[0.4em] text-[0.4em] -top-[1em] relative font-sans font-medium tabular-nums opacity-70">
