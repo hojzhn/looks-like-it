@@ -6,7 +6,7 @@ function App() {
   return (
     <>
       <Loader />
-    <main className="p-[1em] flex flex-col h-screen overflow-hidden">
+    <main className="p-[1em] flex flex-col h-[100dvh] overflow-hidden">
       <div className="justify-between flex flex-0 flex-row items-center mb-4 max-sm:text-[1em] sm:text-[2em]">
         <div className="font-sans"> 그래보여 · 이름있는왕</div>
         <div className="font-sans"> @CLTABA</div>
