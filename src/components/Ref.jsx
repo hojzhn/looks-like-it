@@ -15,7 +15,7 @@ const WIDEN_MS = 550;
 const CUT_HOLD_MS = 0;
 const SWITCH_PAUSE_MS = 0;
 const CUT_GAP_EM = 0.22;
-const CUT_TOP_NUDGE_EM = 0.05;
+const CUT_TOP_NUDGE_EM = 0;
 
 export function RefProvider({ children }) {
   const [openId, setOpenId] = useState(null);
