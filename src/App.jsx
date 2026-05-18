@@ -25,7 +25,7 @@ function App() {
       <main className="p-[1em] flex flex-col h-[100dvh] overflow-hidden">
         <div className="justify-between flex flex-0 flex-row items-center mb-4 max-sm:text-[1em] sm:text-[1.6em]">
           <div className="font-sans font-bold"> 그래보여 · 이름있는왕</div>
-          <div className="font-sans"> @CLTABA</div>
+          <div className="font-sans"> @CTLABA</div>
         </div>
         <div className="flex-1 min-h-0 relative overflow-hidden">
           <AnimatePresence custom={dir} initial={false}>
