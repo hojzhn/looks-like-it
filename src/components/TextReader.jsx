@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
+import { motion } from "framer-motion";
 
 const SAMPLE_MARKDOWN = `The Long Crossing
 
@@ -197,7 +198,11 @@ function parseMarkdown(md) {
   return blocks;
 }
 
-export default function TextReader({ markdown = SAMPLE_MARKDOWN, title }) {
+export default function TextReader({
+  markdown = SAMPLE_MARKDOWN,
+  title,
+  onClose,
+}) {
   const outerRef = useRef(null);
   const pageAreaRef = useRef(null);
   const contentRef = useRef(null);
@@ -224,22 +229,14 @@ export default function TextReader({ markdown = SAMPLE_MARKDOWN, title }) {
   // Recompute total page count when size or content changes.
   useLayoutEffect(() => {
     if (!contentRef.current || size.w === 0) return;
-    // Reset transform briefly so scrollWidth reads true total width.
     const node = contentRef.current;
-    const prevTransform = node.style.transform;
-    node.style.transition = "none";
-    node.style.transform = "translateX(0)";
-    // Force reflow.
     void node.offsetWidth;
     const sw = node.scrollWidth;
-    const count = Math.max(1, Math.ceil(sw / size.w));
+    // Tolerance: ignore < 10% of a column of overflow (avoids a phantom
+    // trailing page caused by trailing margins / sub-pixel rounding).
+    const count = Math.max(1, Math.ceil(sw / size.w - 0.1));
     setPageCount(count);
     setPage((p) => Math.min(p, count - 1));
-    // Restore.
-    node.style.transform = prevTransform;
-    requestAnimationFrame(() => {
-      node.style.transition = "";
-    });
   }, [size.w, size.h, markdown]);
 
   const go = useCallback(
@@ -262,11 +259,13 @@ export default function TextReader({ markdown = SAMPLE_MARKDOWN, title }) {
         setPage(0);
       } else if (e.key === "End") {
         setPage(Math.max(0, pageCount - 1));
+      } else if (e.key === "Escape" && onClose) {
+        onClose();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go, pageCount]);
+  }, [go, pageCount, onClose]);
 
   // Wheel: each gesture advances one page, with a short lock to avoid runaway.
   useEffect(() => {
@@ -316,15 +315,38 @@ export default function TextReader({ markdown = SAMPLE_MARKDOWN, title }) {
     };
   }, [go]);
 
-  const parsed = useMemo(() => parseMarkdown(markdown), [markdown]);
+  const parsed = useMemo(() => parseMarkdown(markdown.trim()), [markdown]);
   const progress = pageCount > 1 ? page / (pageCount - 1) : 0;
 
   return (
-    <div ref={outerRef} className="fixed inset-0 select-none overflow-hidden">
+    <motion.div
+      ref={outerRef}
+      className="fixed inset-0 select-none overflow-hidden bg-[#ededec]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+    >
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-[clamp(12px,2.5vh,32px)] right-[clamp(12px,2.5vw,32px)] z-20 text-[1.4em] cursor-pointer transition-opacity hover:opacity-60"
+        >
+          <i className="fa-solid fa-xmark" />
+        </button>
+      )}
+      {title && page > 0 && (
+        <div className="absolute top-[clamp(12px,2.5vh,32px)] left-[clamp(12px,2.5vw,32px)] z-20 font-sans font-bold uppercase pointer-events-none ">
+          {title}
+        </div>
+      )}
       <style>{`
 
         .ebook-content {
           font-family: 'Noto Serif KR';
+          font-weight:500;
           font-size: clamp(16px, calc(max(var(--page-w), var(--page-h)) * 0.02), 64px);
           line-height: 1.6;
         }
@@ -351,8 +373,9 @@ export default function TextReader({ markdown = SAMPLE_MARKDOWN, title }) {
         .ebook-content p {
           text-align: justify;
           hyphens: auto;
-          orphans: 3;
-          widows: 3;
+          orphans: 1;
+          widows: 1;
+          break-inside: auto;
         }
 
         .ebook-content blockquote {
@@ -417,13 +440,12 @@ export default function TextReader({ markdown = SAMPLE_MARKDOWN, title }) {
       >
         <div
           ref={contentRef}
-          className="ebook-content h-full will-change-transform [column-gap:0] [column-fill:auto]"
+          className="ebook-content h-full [column-gap:0] [column-fill:auto]"
           style={{
             "--page-w": `${size.w}px`,
             "--page-h": `${size.h}px`,
             columnWidth: size.w > 0 ? `${size.w}px` : "100%",
-            transform: `translate3d(-${page * size.w}px, 0, 0)`,
-            transition: "transform 460ms cubic-bezier(0.22, 0.8, 0.28, 1)",
+            transform: `translateX(${-page * size.w}px)`,
           }}
         >
           <div className="font-black ml-[1em] mb-[2em]"> {title}</div>
@@ -436,7 +458,7 @@ export default function TextReader({ markdown = SAMPLE_MARKDOWN, title }) {
         aria-label="Previous page"
         onClick={() => go(-1)}
         disabled={page === 0}
-        className="absolute top-0 bottom-0 left-0 w-[clamp(24px,9vw,140px)] bg-transparent border-0 outline-none group"
+        className="absolute top-0 bottom-0 left-0 w-1/2 bg-transparent border-0 outline-none group"
         style={{
           cursor: page === 0 ? "default" : "w-resize",
         }}
@@ -457,7 +479,7 @@ export default function TextReader({ markdown = SAMPLE_MARKDOWN, title }) {
         aria-label="Next page"
         onClick={() => go(1)}
         disabled={page >= pageCount - 1}
-        className="absolute top-0 bottom-0 right-0 w-[clamp(24px,9vw,140px)] bg-transparent border-0 outline-none"
+        className="absolute top-0 bottom-0 right-0 w-1/2 bg-transparent border-0 outline-none"
         style={{
           cursor: page >= pageCount - 1 ? "default" : "e-resize",
         }}
@@ -474,11 +496,11 @@ export default function TextReader({ markdown = SAMPLE_MARKDOWN, title }) {
       </button>
 
       {/* Bottom indicator: progress bar and page count. */}
-      <div className="absolute flex flex-row items-center bottom-[clamp(30px,6vh,60px)] gap-[10px] w-full justify-end pr-[clamp(24px,9vw,140px)]">
+      <div className="absolute flex flex-row items-center bottom-[clamp(30px,6vh,60px)] gap-[10px] w-full justify-end pr-[clamp(24px,9vw,140px)] z-20 pointer-events-none">
         {page + 1}
       </div>
 
       {/* Subtle hint, top-right. */}
-    </div>
+    </motion.div>
   );
 }
