@@ -423,7 +423,7 @@ export default function TextReader({
           text-align: center;
         }
         .ebook-content hr::before {
-          content: '\\00a7';
+          content: '\\1F7B6';
           font-size: 1.2em;
         }
 
